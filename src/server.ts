@@ -1,10 +1,23 @@
-import dotenv from 'dotenv';
+import 'dotenv/config'; // Carregar .env ANTES de tudo
 import app from './app';
+import { env } from './config/env';
+import { logger } from './lib/logger';
 
-dotenv.config();
+app.listen(env.PORT, () => {
+    logger.info(`Server started`, {
+        port: env.PORT,
+        environment: env.NODE_ENV,
+        database: env.DATABASE_URL
+    });
+});
 
-const PORT = process.env.PORT || 3000;
+// Tratamento de erros não capturados
+process.on('uncaughtException', (error) => {
+    logger.error('Uncaught Exception', { error: error.message, stack: error.stack });
+    process.exit(1);
+});
 
-app.listen(PORT, () => {
-    console.log('Server rodando na porta ' + PORT);
+process.on('unhandledRejection', (reason) => {
+    logger.error('Unhandled Rejection', { reason });
+    process.exit(1);
 });
